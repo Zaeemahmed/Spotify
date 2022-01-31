@@ -1,22 +1,24 @@
 import { HomeIcon, PlusCircleIcon, HeartIcon, RssIcon, LibraryIcon, SearchIcon } from "@heroicons/react/outline";
-import { useRecoilState } from 'recoil';
+import { useRecoilState, useRecoilValue } from 'recoil';
 import { signOut, useSession } from 'next-auth/react';
 import SidebarItem from './SidebarItem';
 import Playlist from '../Playlist';
 import { useEffect, useState } from 'react';
 import useSpotify from '../../hooks/useSpotify';
-import { playListIdState } from '../../atoms/playList';
+import { playListIdState, playlistState } from '../../atoms/playList';
 
 export default function Sidebar() {
     const spotifyApi = useSpotify();
+    const [playlistId, setPlaylistId] = useRecoilState(playListIdState);
+    const [playLists, setPlaylists] = useState([]);
     const { data: session } = useSession();
-    const [playLists, setPlaylists] = useState([])
-    const [playListId, setPlayListId] = useRecoilState(playListIdState);
+    // const currentPlaylist = useRecoilValue(playlistState);
 
     useEffect(async () => {
         if(spotifyApi.getAccessToken()) {
-            const playlistsData = await spotifyApi.getUserPlaylists();
-            setPlaylists(playlistsData.body.items)
+            const userPlaylists = await spotifyApi.getUserPlaylists();
+            setPlaylists(userPlaylists.body.items);
+            console.log(playLists)
         }
     }, [session])
 
@@ -36,7 +38,7 @@ export default function Sidebar() {
             <SidebarItem Icon={PlusCircleIcon} iconText="Create a playlist"/>
             <SidebarItem Icon={RssIcon} iconText="Your episodes"/>
             <hr className='border-t-[0.1px] border-gray-900' />
-            {playLists.map(playlist => <Playlist playlistName={playlist.name} key={playlist.id} onClick={() => setPlayListId(playlist.id)}/>)}
+            {playLists.map(playlist => <Playlist key={playlist.id} playlistName={playlist.name} onClick={() => setPlaylistId(playlist.id)}/>)}
         </div>
     )
 }

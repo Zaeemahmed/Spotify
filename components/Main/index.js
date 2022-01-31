@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useRecoilValue, useRecoilState } from 'recoil';
 import { shuffle } from 'lodash';
 import UserAvatar from './UserAvatar';
-import { playListIdState, playlistState } from '../../atoms/playList';
 import useSpotify from '../../hooks/useSpotify';
+import { playListIdState, playlistState } from '../../atoms/playList';
 
 const colorGradients = [
     "from-indigo-500",
@@ -13,17 +13,20 @@ const colorGradients = [
 ]
 export default function Main() {
     const [color, setColor] = useState(null);
-    const playListId = useRecoilValue(playListIdState);
-    const [playList, setPlayList] = useRecoilState(playlistState);
+    const playlistId = useRecoilValue(playListIdState);
+    const [playlist, setPlaylist] = useRecoilState(playlistState);
     const spotifyApi = useSpotify();
 
     useEffect(() => {
         setColor(shuffle(colorGradients).pop());
-    }, [playListId])
+    }, [playlistId])
 
-    useEffect(() => {
-        playListId && spotifyApi.getPlaylist(playListId).then(data => setPlayList(data.body))
-    }, [spotifyApi, playListId])
+    useEffect(async () => {
+        if(spotifyApi.getAccessToken() && playlistId) {
+            const userPlaylist = await spotifyApi.getPlaylist(playlistId);
+            setPlaylist(userPlaylist.body)
+        }
+    }, [playlistId])
 
     return (
         <div className='flex-grow relative'>
@@ -31,7 +34,7 @@ export default function Main() {
                 <UserAvatar />  
             </div>
             <div className={`bg-gradient-to-b ${color} to-black h-80 flex items-end`}>
-                <img src={playList?.images[0].url} className='h-44 w-44 shadow-2xl'/>
+                <img src={playlist?.images?.[0].url} className='h-44 w-44 shadow-2xl'/>
                 <div></div>
             </div>
         </div>
