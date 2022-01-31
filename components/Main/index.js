@@ -24,7 +24,7 @@ export default function Main() {
     useEffect(async () => {
         if(spotifyApi.getAccessToken() && playlistId) {
             const userPlaylist = await spotifyApi.getPlaylist(playlistId);
-            setPlaylist(userPlaylist.body)
+            setPlaylist(userPlaylist.body);
         }
     }, [playlistId])
 
